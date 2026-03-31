@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { useParams } from "react-router-dom";
 import API from "../api/axios";
 import "../styles/orderDetail.css";
@@ -7,14 +7,14 @@ function OrderDetail() {
   const { id } = useParams();
   const [order, setOrder] = useState(null);
 
-  useEffect(() => {
-    fetchOrder();
-  }, []);
-
-  const fetchOrder = async () => {
+  const fetchOrder = useCallback(async () => {
     const res = await API.get(`/orders/${id}`);
     setOrder(res.data);
-  };
+  }, [id]);
+
+  useEffect(() => {
+    fetchOrder();
+  }, [fetchOrder]);
 
   const cancelOrder = async () => {
     try {

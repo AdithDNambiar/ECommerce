@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from "react";
+import React, { useContext, useEffect, useState, useCallback } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import API from "../api/axios";
 import { AuthContext } from "../context/AuthContext";
@@ -19,28 +19,28 @@ function ProductPage() {
   const [toastMessage, setToastMessage] = useState("");
   const [showToast, setShowToast] = useState(false);
 
-  useEffect(() => {
-    fetchProduct();
-    fetchReviews();
-  }, [id]);
-
-  const fetchProduct = async () => {
+  const fetchProduct = useCallback(async () => {
     try {
       const res = await API.get(`/products/${id}`);
       setProduct(res.data);
     } catch (err) {
       console.log(err);
     }
-  };
+  }, [id]);
 
-  const fetchReviews = async () => {
+  const fetchReviews = useCallback(async () => {
     try {
       const res = await API.get(`/reviews/${id}`);
       setReviews(res.data);
     } catch (err) {
       console.log(err);
     }
-  };
+  }, [id]);
+
+  useEffect(() => {
+    fetchProduct();
+    fetchReviews();
+  }, [fetchProduct, fetchReviews]);
 
   const showSuccessToast = (message) => {
     setToastMessage(message);
@@ -54,9 +54,9 @@ function ProductPage() {
 
   const addToCart = async () => {
     if (!user) {
-  navigate("/login", { state: { from: { pathname: `/product/${id}` } } });
-  return;
-}
+      navigate("/login", { state: { from: { pathname: `/product/${id}` } } });
+      return;
+    }
 
     try {
       await API.post("/cart/add", {
@@ -73,7 +73,7 @@ function ProductPage() {
         err.response?.status === 403 ||
         msg.toLowerCase().includes("token")
       ) {
-        navigate("/login");
+        navigate("/login", { state: { from: { pathname: `/product/${id}` } } });
         return;
       }
 
@@ -83,9 +83,9 @@ function ProductPage() {
 
   const submitReview = async () => {
     if (!user) {
-  navigate("/login", { state: { from: { pathname: `/product/${id}` } } });
-  return;
-}
+      navigate("/login", { state: { from: { pathname: `/product/${id}` } } });
+      return;
+    }
 
     try {
       setReviewError("");
@@ -111,11 +111,10 @@ function ProductPage() {
         err.response?.status === 403 ||
         msg.toLowerCase().includes("token")
       ) {
-        navigate("/login");
+        navigate("/login", { state: { from: { pathname: `/product/${id}` } } });
         return;
       }
 
-      // if logged in but not delivered, show proper inline error
       setReviewError(msg);
     }
   };

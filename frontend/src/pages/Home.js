@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from "react";
+import React, { useContext, useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import API from "../api/axios";
 import "../styles/home.css";
@@ -16,22 +16,22 @@ function Home() {
   const { fetchCartCount } = useContext(CartContext);
   const { user } = useContext(AuthContext);
 
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      fetchProducts();
-    }, 500);
-
-    return () => clearTimeout(timer);
-  }, [search]);
-
-  const fetchProducts = async () => {
+  const fetchProducts = useCallback(async () => {
     try {
       const res = await API.get(`/products?search=${search}`);
       setProducts(res.data);
     } catch (err) {
       console.log(err);
     }
-  };
+  }, [search]);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      fetchProducts();
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [fetchProducts]);
 
   const showSuccessToast = (message) => {
     setToastMessage(message);
@@ -47,16 +47,15 @@ function Home() {
     e.stopPropagation();
 
     if (!user) {
-  navigate("/login", { state: { from: { pathname: `/product/${id}` } } });
-  return;
-}
+      navigate("/login", { state: { from: { pathname: "/" } } });
+      return;
+    }
 
     try {
       await API.post("/cart/add", {
         productId: id,
         quantity: 1
       });
-
       await fetchCartCount();
       showSuccessToast("Added to cart");
     } catch (err) {
@@ -67,7 +66,7 @@ function Home() {
         err.response?.status === 403 ||
         msg.toLowerCase().includes("token")
       ) {
-        navigate("/login");
+        navigate("/login", { state: { from: { pathname: "/" } } });
         return;
       }
 

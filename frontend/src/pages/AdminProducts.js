@@ -182,18 +182,6 @@ function AdminProducts() {
 );
 }
 
-const formBox = {
-  display: "grid",
-  gap: "10px",
-  maxWidth: "450px"
-};
 
-const productBox = {
-  border: "1px solid #ddd",
-  borderRadius: "10px",
-  padding: "15px",
-  marginBottom: "15px",
-  background: "#fff"
-};
 
 export default AdminProducts;

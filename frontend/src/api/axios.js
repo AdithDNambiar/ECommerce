@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const API = axios.create({
-  baseURL: "https://shopx-backend-sp5w.onrender.com/api",
+  baseURL: process.env.REACT_APP_API_URL || "http://localhost:5000/api",
   withCredentials: true
 });
 
@@ -27,7 +27,7 @@ API.interceptors.response.use(
         await API.post("/auth/refresh");
         return API(originalRequest);
       } catch {
-        window.location.href = "/login";
+        return Promise.reject(error);
       }
     }
 

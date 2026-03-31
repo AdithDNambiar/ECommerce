@@ -7,20 +7,33 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [authLoading, setAuthLoading] = useState(true);
 
-  const checkAuth = async () => {
-    try {
-      await API.post("/auth/refresh");
-      const res = await API.get("/auth/me");
-      setUser(res.data.user);
-    } catch {
-      setUser(null);
-    } finally {
-      setAuthLoading(false);
-    }
-  };
-
   useEffect(() => {
+    let mounted = true;
+
+    const checkAuth = async () => {
+      try {
+        await API.post("/auth/refresh");
+        const res = await API.get("/auth/me");
+
+        if (mounted) {
+          setUser(res.data.user);
+        }
+      } catch {
+        if (mounted) {
+          setUser(null);
+        }
+      } finally {
+        if (mounted) {
+          setAuthLoading(false);
+        }
+      }
+    };
+
     checkAuth();
+
+    return () => {
+      mounted = false;
+    };
   }, []);
 
   const login = async (email, password) => {
