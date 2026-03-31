@@ -30,12 +30,18 @@ const getCookieOptions = () => {
 };
 
 const setAuthCookies = (res, accessToken, refreshToken = null) => {
-  const cookieOptions = getCookieOptions();
-
-  res.cookie("accessToken", accessToken, cookieOptions);
+  res.cookie("accessToken", accessToken, {
+    httpOnly: true,
+    secure: false,
+    sameSite: "lax"
+  });
 
   if (refreshToken) {
-    res.cookie("refreshToken", refreshToken, cookieOptions);
+    res.cookie("refreshToken", refreshToken, {
+      httpOnly: true,
+      secure: false,
+      sameSite: "lax"
+    });
   }
 };
 
@@ -196,8 +202,17 @@ exports.logout = async (req, res) => {
 
     const cookieOptions = getCookieOptions();
 
-    res.clearCookie("accessToken", cookieOptions);
-    res.clearCookie("refreshToken", cookieOptions);
+    res.clearCookie("accessToken", {
+  httpOnly: true,
+  secure: false,
+  sameSite: "lax"
+});
+
+res.clearCookie("refreshToken", {
+  httpOnly: true,
+  secure: false,
+  sameSite: "lax"
+});
 
     res.json({ message: "Logged out" });
   } catch (err) {
