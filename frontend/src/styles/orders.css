@@ -1,0 +1,39 @@
+.orders-page {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 28px 24px;
+}
+
+.orders-page h2 {
+  font-size: 30px;
+  margin-bottom: 18px;
+}
+
+.order-card {
+  border: 1px solid #e5e7eb;
+  border-radius: 18px;
+  padding: 18px;
+  margin-bottom: 14px;
+  background: white;
+  box-shadow: 0 10px 22px rgba(15, 23, 42, 0.05);
+  cursor: pointer;
+}
+
+.order-card p {
+  margin: 8px 0;
+  word-break: break-word;
+}
+
+@media (max-width: 480px) {
+  .orders-page {
+    padding: 16px;
+  }
+
+  .orders-page h2 {
+    font-size: 24px;
+  }
+
+  .order-card {
+    padding: 14px;
+  }
+}

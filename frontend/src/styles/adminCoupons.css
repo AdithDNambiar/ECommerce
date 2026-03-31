@@ -1,0 +1,77 @@
+.admin-coupons-page {
+  padding: 24px;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.admin-coupons-page h2 {
+  margin-bottom: 20px;
+}
+
+.admin-coupon-form {
+  display: grid;
+  gap: 12px;
+  max-width: 420px;
+  background: #fff;
+  padding: 18px;
+  border: 1px solid #ddd;
+  border-radius: 12px;
+}
+
+.admin-coupon-form input,
+.admin-coupon-form select {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  box-sizing: border-box;
+  font-size: 14px;
+}
+
+.admin-coupon-form button {
+  background: #111;
+  color: white;
+  border: none;
+  padding: 12px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.admin-coupon-list {
+  margin-top: 24px;
+  display: grid;
+  gap: 16px;
+}
+
+.admin-coupon-card {
+  border: 1px solid #ddd;
+  border-radius: 12px;
+  padding: 16px;
+  background: #fff;
+}
+
+.admin-coupon-card p {
+  margin: 6px 0;
+  word-break: break-word;
+}
+
+.admin-coupon-card button {
+  margin-top: 10px;
+  background: #111;
+  color: white;
+  border: none;
+  padding: 10px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.admin-coupon-card button:hover,
+.admin-coupon-form button:hover {
+  opacity: 0.9;
+}
+
+@media (max-width: 480px) {
+  .admin-coupons-page {
+    padding: 16px;
+  }
+}
