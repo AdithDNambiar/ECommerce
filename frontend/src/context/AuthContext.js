@@ -10,11 +10,9 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     let mounted = true;
 
-    const checkAuth = async () => {
+    const checkUser = async () => {
       try {
-        await API.post("/auth/refresh");
         const res = await API.get("/auth/me");
-
         if (mounted) {
           setUser(res.data.user);
         }
@@ -29,7 +27,7 @@ export const AuthProvider = ({ children }) => {
       }
     };
 
-    checkAuth();
+    checkUser();
 
     return () => {
       mounted = false;

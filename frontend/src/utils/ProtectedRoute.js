@@ -10,7 +10,11 @@ const ProtectedRoute = ({ children }) => {
     return <div style={{ padding: "20px" }}>Loading...</div>;
   }
 
-  return user ? children : <Navigate to="/login" state={{ from: location }} />;
+  if (!user) {
+    return <Navigate to="/login" state={{ from: location }} replace />;
+  }
+
+  return children;
 };
 
 export default ProtectedRoute;
