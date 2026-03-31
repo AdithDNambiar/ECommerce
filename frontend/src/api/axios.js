@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const API = axios.create({
-  baseURL: "http://localhost:5000/api",
+  baseURL: process.env.REACT_APP_API_URL,
   withCredentials: true
 });
 
@@ -27,7 +27,7 @@ API.interceptors.response.use(
         await API.post("/auth/refresh");
         return API(originalRequest);
       } catch {
-        return Promise.reject(error);
+        window.location.href = "/login";
       }
     }
 
