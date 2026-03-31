@@ -19,19 +19,23 @@ const createRefreshToken = (user) => {
   );
 };
 
-const setAuthCookies = (res, accessToken, refreshToken = null) => {
-  res.cookie("accessToken", accessToken, {
+const getCookieOptions = () => {
+  const isProduction = process.env.NODE_ENV === "production";
+
+  return {
     httpOnly: true,
-    secure: false,
-    sameSite: "lax"
-  });
+    secure: isProduction,
+    sameSite: isProduction ? "none" : "lax"
+  };
+};
+
+const setAuthCookies = (res, accessToken, refreshToken = null) => {
+  const cookieOptions = getCookieOptions();
+
+  res.cookie("accessToken", accessToken, cookieOptions);
 
   if (refreshToken) {
-    res.cookie("refreshToken", refreshToken, {
-      httpOnly: true,
-      secure: false,
-      sameSite: "lax"
-    });
+    res.cookie("refreshToken", refreshToken, cookieOptions);
   }
 };
 
@@ -40,6 +44,7 @@ exports.register = async (req, res) => {
     const { name, email, password } = req.body;
 
     const exists = await User.findOne({ email });
+
     if (exists) {
       return res.status(400).json({ message: "User already exists" });
     }
@@ -88,7 +93,9 @@ exports.login = async (req, res) => {
     res.json({
       user: {
         id: user._id,
-        role: user.role
+        role: user.role,
+        name: user.name,
+        email: user.email
       }
     });
   } catch (err) {
@@ -126,7 +133,9 @@ exports.adminLogin = async (req, res) => {
     res.json({
       user: {
         id: user._id,
-        role: user.role
+        role: user.role,
+        name: user.name,
+        email: user.email
       }
     });
   } catch (err) {
@@ -148,6 +157,11 @@ exports.refresh = async (req, res) => {
       return res.status(403).json({ message: "Invalid refresh token" });
     }
 
+    if (stored.expiresAt && stored.expiresAt < new Date()) {
+      await Token.deleteOne({ token });
+      return res.status(403).json({ message: "Refresh token expired" });
+    }
+
     const decoded = jwt.verify(token, process.env.JWT_REFRESH_SECRET);
     const user = await User.findById(decoded.id);
 
@@ -162,7 +176,9 @@ exports.refresh = async (req, res) => {
     res.json({
       user: {
         id: user._id,
-        role: user.role
+        role: user.role,
+        name: user.name,
+        email: user.email
       }
     });
   } catch (err) {
@@ -178,8 +194,10 @@ exports.logout = async (req, res) => {
       await Token.deleteOne({ token });
     }
 
-    res.clearCookie("accessToken");
-    res.clearCookie("refreshToken");
+    const cookieOptions = getCookieOptions();
+
+    res.clearCookie("accessToken", cookieOptions);
+    res.clearCookie("refreshToken", cookieOptions);
 
     res.json({ message: "Logged out" });
   } catch (err) {
@@ -190,6 +208,10 @@ exports.logout = async (req, res) => {
 exports.me = async (req, res) => {
   try {
     const user = await User.findById(req.user.id).select("_id role name email");
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
 
     res.json({
       user: {
