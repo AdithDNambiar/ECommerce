@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const API = axios.create({
-  baseURL: process.env.REACT_APP_API_URL,
+  baseURL: "https://shopx-backend-sp5w.onrender.com/api",
   withCredentials: true
 });
 
