@@ -1,7 +1,10 @@
 import React, { useContext, useEffect, useState, useCallback } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { FaHeart } from "react-icons/fa";
 import API from "../api/axios";
 import { AuthContext } from "../context/AuthContext";
+import { LoginModalContext } from "../context/LoginModalContext";
+import { WishlistContext } from "../context/WishlistContext";
 import "../styles/product.css";
 import Toast from "../components/Toast";
 
@@ -9,6 +12,8 @@ function ProductPage() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { user } = useContext(AuthContext);
+  const { openLoginModal } = useContext(LoginModalContext);
+  const { toggleWishlist, isWishlisted } = useContext(WishlistContext);
 
   const [product, setProduct] = useState(null);
   const [reviews, setReviews] = useState([]);
@@ -18,21 +23,31 @@ function ProductPage() {
   const [reviewError, setReviewError] = useState("");
   const [toastMessage, setToastMessage] = useState("");
   const [showToast, setShowToast] = useState(false);
+  const [pageError, setPageError] = useState("");
+  const [activeImage, setActiveImage] = useState("");
 
   const fetchProduct = useCallback(async () => {
     try {
+      setPageError("");
       const res = await API.get(`/products/${id}`);
       setProduct(res.data);
+      setActiveImage(
+        res.data?.images?.length > 0
+          ? res.data.images[0]
+          : "https://via.placeholder.com/400x400?text=No+Image"
+      );
     } catch (err) {
-      console.log(err);
+      setPageError(err.response?.data?.message || "Product not found");
+      setProduct(null);
     }
   }, [id]);
 
   const fetchReviews = useCallback(async () => {
     try {
       const res = await API.get(`/reviews/${id}`);
-      setReviews(res.data);
+      setReviews(res.data || []);
     } catch (err) {
+      setReviews([]);
       console.log(err);
     }
   }, [id]);
@@ -54,7 +69,7 @@ function ProductPage() {
 
   const addToCart = async () => {
     if (!user) {
-      navigate("/login", { state: { from: { pathname: `/product/${id}` } } });
+      openLoginModal();
       return;
     }
 
@@ -66,24 +81,14 @@ function ProductPage() {
 
       showSuccessToast("Added to cart");
     } catch (err) {
-      const msg = err.response?.data?.message || "";
-
-      if (
-        err.response?.status === 401 ||
-        err.response?.status === 403 ||
-        msg.toLowerCase().includes("token")
-      ) {
-        navigate("/login", { state: { from: { pathname: `/product/${id}` } } });
-        return;
-      }
-
-      showSuccessToast(msg || "Something went wrong");
+      const msg = err.response?.data?.message || "Something went wrong";
+      showSuccessToast(msg);
     }
   };
 
   const submitReview = async () => {
     if (!user) {
-      navigate("/login", { state: { from: { pathname: `/product/${id}` } } });
+      openLoginModal();
       return;
     }
 
@@ -104,22 +109,24 @@ function ProductPage() {
       fetchReviews();
       fetchProduct();
     } catch (err) {
-      const msg = err.response?.data?.message || "Error";
-
-      if (
-        err.response?.status === 401 ||
-        err.response?.status === 403 ||
-        msg.toLowerCase().includes("token")
-      ) {
-        navigate("/login", { state: { from: { pathname: `/product/${id}` } } });
-        return;
-      }
-
-      setReviewError(msg);
+      setReviewError(err.response?.data?.message || "Error");
     }
   };
 
-  if (!product) return <div>Loading...</div>;
+  if (pageError) {
+    return (
+      <div className="product-page-wrapper">
+        <div className="product-error-box">
+          <h2>Product not available</h2>
+          <p>{pageError}</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!product) {
+    return <div className="product-page-wrapper">Loading...</div>;
+  }
 
   const discountedPrice =
     product.price - (product.price * product.discount) / 100;
@@ -130,15 +137,36 @@ function ProductPage() {
 
       <div className="product-page">
         <div className="product-image-box">
+          <div className="product-image-top-actions">
+            <button
+              className={`wishlist-btn product-wishlist-btn ${isWishlisted(product._id) ? "wishlisted" : ""}`}
+              onClick={() => toggleWishlist(product)}
+            >
+              <FaHeart />
+            </button>
+          </div>
+
           <img
-            src={
-              product.images && product.images.length > 0
-                ? product.images[0]
-                : "https://via.placeholder.com/400x400?text=No+Image"
-            }
+            src={activeImage}
             alt={product.name}
             className="product-main-image"
           />
+
+          {product.images && product.images.length > 1 && (
+            <div className="product-thumb-row">
+              {product.images.map((img, index) => (
+                <img
+                  key={index}
+                  src={img}
+                  alt={`thumb-${index}`}
+                  className={`product-thumb ${
+                    activeImage === img ? "product-thumb-active" : ""
+                  }`}
+                  onClick={() => setActiveImage(img)}
+                />
+              ))}
+            </div>
+          )}
         </div>
 
         <div className="product-details">
@@ -188,9 +216,7 @@ function ProductPage() {
         <div className="review-form">
           <h4>Write a Review</h4>
 
-          {reviewError && (
-            <p className="review-error">{reviewError}</p>
-          )}
+          {reviewError && <p className="review-error">{reviewError}</p>}
 
           <div className="star-rating">
             {[1, 2, 3, 4, 5].map((star) => (

@@ -1,6 +1,24 @@
 const Product = require("../models/Product");
 const cloudinary = require("../config/cloudinary");
 
+const notDeletedFilter = {
+  $or: [{ isDeleted: false }, { isDeleted: { $exists: false } }]
+};
+
+const uploadToCloudinary = (fileBuffer) => {
+  return new Promise((resolve, reject) => {
+    const stream = cloudinary.uploader.upload_stream(
+      { folder: "ecommerce" },
+      (error, result) => {
+        if (error) reject(error);
+        else resolve(result);
+      }
+    );
+
+    stream.end(fileBuffer);
+  });
+};
+
 exports.createProduct = async (req, res) => {
   try {
     const { name, description, category, price, discount, stock } = req.body;
@@ -8,20 +26,9 @@ exports.createProduct = async (req, res) => {
     let imageUrls = [];
 
     if (req.files && req.files.length > 0) {
-      for (let file of req.files) {
-        const result = await new Promise((resolve, reject) => {
-          const stream = cloudinary.uploader.upload_stream(
-            { folder: "ecommerce" },
-            (error, result) => {
-              if (error) reject(error);
-              else resolve(result);
-            }
-          );
-
-          stream.end(file.buffer);
-        });
-
-        imageUrls.push(result.secure_url);
+      for (const file of req.files) {
+        const uploaded = await uploadToCloudinary(file.buffer);
+        imageUrls.push(uploaded.secure_url);
       }
     }
 
@@ -45,7 +52,7 @@ exports.getProducts = async (req, res) => {
   try {
     const { category, minPrice, maxPrice, search, sort, rating } = req.query;
 
-    let filter = { isDeleted: { $ne: true } };
+    let filter = { ...notDeletedFilter };
 
     if (search) {
       filter.name = { $regex: search, $options: "i" };
@@ -83,7 +90,7 @@ exports.getProductById = async (req, res) => {
   try {
     const product = await Product.findOne({
       _id: req.params.id,
-      isDeleted: false
+      ...notDeletedFilter
     });
 
     if (!product) {
@@ -91,7 +98,7 @@ exports.getProductById = async (req, res) => {
     }
 
     res.json(product);
-  } catch {
+  } catch (err) {
     res.status(404).json({ message: "Product not found" });
   }
 };
@@ -111,20 +118,9 @@ exports.updateProduct = async (req, res) => {
     if (req.files && req.files.length > 0) {
       imageUrls = [];
 
-      for (let file of req.files) {
-        const result = await new Promise((resolve, reject) => {
-          const stream = cloudinary.uploader.upload_stream(
-            { folder: "ecommerce" },
-            (error, result) => {
-              if (error) reject(error);
-              else resolve(result);
-            }
-          );
-
-          stream.end(file.buffer);
-        });
-
-        imageUrls.push(result.secure_url);
+      for (const file of req.files) {
+        const uploaded = await uploadToCloudinary(file.buffer);
+        imageUrls.push(uploaded.secure_url);
       }
     }
 
@@ -146,9 +142,15 @@ exports.updateProduct = async (req, res) => {
 
 exports.deleteProduct = async (req, res) => {
   try {
-    await Product.findByIdAndUpdate(req.params.id, {
-      isDeleted: true
-    });
+    const product = await Product.findByIdAndUpdate(
+      req.params.id,
+      { isDeleted: true },
+      { new: true }
+    );
+
+    if (!product) {
+      return res.status(404).json({ message: "Product not found" });
+    }
 
     res.json({ message: "Product deleted" });
   } catch (err) {

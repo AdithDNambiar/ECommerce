@@ -14,6 +14,7 @@ function AdminProducts() {
     stock: ""
   });
   const [images, setImages] = useState([]);
+  const [previewImages, setPreviewImages] = useState([]);
 
   useEffect(() => {
     fetchProducts();
@@ -38,6 +39,7 @@ function AdminProducts() {
       stock: ""
     });
     setImages([]);
+    setPreviewImages([]);
     setEditingId(null);
   };
 
@@ -58,6 +60,13 @@ function AdminProducts() {
       discount: product.discount || "",
       stock: product.stock || ""
     });
+    setPreviewImages(product.images || []);
+  };
+
+  const handleImageChange = (e) => {
+    const files = Array.from(e.target.files);
+    setImages(files);
+    setPreviewImages(files.map((file) => URL.createObjectURL(file)));
   };
 
   const saveProduct = async () => {
@@ -105,83 +114,72 @@ function AdminProducts() {
   };
 
   return (
-  <div className="admin-products-page">
-    <h2>Manage Products</h2>
+    <div className="admin-products-page">
+      <h2>Manage Products</h2>
 
-    {/* FORM */}
-    <div className="admin-product-form">
-      <input name="name" placeholder="Name" value={form.name} onChange={handleChange} />
-      <input name="description" placeholder="Description" value={form.description} onChange={handleChange} />
-      <input name="category" placeholder="Category" value={form.category} onChange={handleChange} />
-      <input name="price" placeholder="Price" value={form.price} onChange={handleChange} />
-      <input name="discount" placeholder="Discount %" value={form.discount} onChange={handleChange} />
-      <input name="stock" placeholder="Stock" value={form.stock} onChange={handleChange} />
+      <div className="admin-product-form">
+        <input name="name" placeholder="Name" value={form.name} onChange={handleChange} />
+        <input name="description" placeholder="Description" value={form.description} onChange={handleChange} />
+        <input name="category" placeholder="Category" value={form.category} onChange={handleChange} />
+        <input name="price" placeholder="Price" value={form.price} onChange={handleChange} />
+        <input name="discount" placeholder="Discount %" value={form.discount} onChange={handleChange} />
+        <input name="stock" placeholder="Stock" value={form.stock} onChange={handleChange} />
+        <input type="file" multiple onChange={handleImageChange} />
 
-      <input
-        type="file"
-        multiple
-        onChange={(e) => setImages(e.target.files)}
-      />
+        {previewImages.length > 0 && (
+          <div className="admin-image-preview-row">
+            {previewImages.map((img, index) => (
+              <img key={index} src={img} alt={`preview-${index}`} className="admin-image-preview" />
+            ))}
+          </div>
+        )}
 
-      <button onClick={saveProduct}>
-        {editingId ? "Update Product" : "Add Product"}
-      </button>
-
-      {editingId && (
-        <button className="cancel-btn" onClick={resetForm}>
-          Cancel Edit
+        <button onClick={saveProduct}>
+          {editingId ? "Update Product" : "Add Product"}
         </button>
-      )}
-    </div>
 
-    {/* PRODUCT LIST */}
-    <div className="admin-product-list">
-      {products.map((product) => (
-        <div key={product._id} className="admin-product-card">
+        {editingId && (
+          <button className="cancel-btn" onClick={resetForm}>
+            Cancel Edit
+          </button>
+        )}
+      </div>
 
-          {/* LEFT SIDE */}
-          <div className="admin-product-left">
-            <img
-              src={
-                product.images?.[0] ||
-                "https://via.placeholder.com/80x80?text=No+Image"
-              }
-              alt={product.name}
-              className="admin-product-image"
-            />
+      <div className="admin-product-list">
+        {products.map((product) => (
+          <div key={product._id} className="admin-product-card">
+            <div className="admin-product-left">
+              <img
+                src={
+                  product.images?.[0] ||
+                  "https://via.placeholder.com/80x80?text=No+Image"
+                }
+                alt={product.name}
+                className="admin-product-image"
+              />
 
-            <div className="admin-product-info">
-              <p><strong>{product.name}</strong></p>
-              <p>₹{product.price}</p>
-              <p>Stock: {product.stock}</p>
-              <p>Rating: {product.rating || 0}</p>
+              <div className="admin-product-info">
+                <p><strong>{product.name}</strong></p>
+                <p>₹{product.price}</p>
+                <p>Stock: {product.stock}</p>
+                <p>Rating: {product.rating || 0}</p>
+              </div>
+            </div>
+
+            <div className="admin-product-actions">
+              <button className="edit-btn" onClick={() => editProduct(product)}>
+                Edit
+              </button>
+
+              <button className="delete-btn" onClick={() => deleteProduct(product._id)}>
+                Delete
+              </button>
             </div>
           </div>
-
-          {/* ACTIONS */}
-          <div className="admin-product-actions">
-            <button
-              className="edit-btn"
-              onClick={() => editProduct(product)}
-            >
-              Edit
-            </button>
-
-            <button
-              className="delete-btn"
-              onClick={() => deleteProduct(product._id)}
-            >
-              Delete
-            </button>
-          </div>
-
-        </div>
-      ))}
+        ))}
+      </div>
     </div>
-  </div>
-);
+  );
 }
-
-
 
 export default AdminProducts;

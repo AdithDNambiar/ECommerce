@@ -10,15 +10,18 @@ import {
   FaTags,
   FaClipboardList,
   FaSignOutAlt,
-  FaBox
+  FaBox,
+  FaHeart
 } from "react-icons/fa";
 import { AuthContext } from "../context/AuthContext";
 import { CartContext } from "../context/CartContext";
+import { LoginModalContext } from "../context/LoginModalContext";
 import "../styles/navbar.css";
 
 function Navbar() {
   const { user, logout } = useContext(AuthContext);
   const { cartCount } = useContext(CartContext);
+  const { openLoginModal } = useContext(LoginModalContext);
 
   const isAdmin = user?.role === "admin";
 
@@ -29,6 +32,10 @@ function Navbar() {
       <div className="nav-icons">
         <Link to="/" className="nav-icon" title="Home">
           <FaHome />
+        </Link>
+
+        <Link to="/wishlist" className="nav-icon" title="Wishlist">
+          <FaHeart />
         </Link>
 
         <Link to="/cart" className="nav-icon" title={`Cart (${cartCount})`}>
@@ -47,9 +54,9 @@ function Navbar() {
         </Link>
 
         {!user && (
-          <Link to="/login" className="nav-icon" title="Login">
+          <button className="nav-icon nav-logout-btn" title="Login" onClick={openLoginModal}>
             <FaSignInAlt />
-          </Link>
+          </button>
         )}
 
         {isAdmin && (
