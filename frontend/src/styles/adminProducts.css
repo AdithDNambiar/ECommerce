@@ -1,7 +1,6 @@
 .admin-products-page {
-  padding: 24px;
-  max-width: 1200px;
-  margin: 0 auto;
+  padding: 28px 32px;
+  width: 100%;
 }
 
 .admin-products-page h2 {

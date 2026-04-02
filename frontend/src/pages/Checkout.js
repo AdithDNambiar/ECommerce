@@ -8,6 +8,7 @@ function Checkout() {
   const [couponCode, setCouponCode] = useState("");
   const [summary, setSummary] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [checkoutError, setCheckoutError] = useState("");
 
   const [form, setForm] = useState({
     name: "",
@@ -17,6 +18,8 @@ function Checkout() {
     state: "",
     pincode: ""
   });
+
+  const [errors, setErrors] = useState({});
 
   useEffect(() => {
     fetchAddresses();
@@ -50,15 +53,39 @@ function Checkout() {
   };
 
   const handleChange = (e) => {
+    const { name, value } = e.target;
+
     setForm({
       ...form,
-      [e.target.name]: e.target.value
+      [name]: value
     });
+
+    setErrors((prev) => ({
+      ...prev,
+      [name]: ""
+    }));
+  };
+
+  const validateAddress = () => {
+    const newErrors = {};
+
+    if (!form.name.trim()) newErrors.name = "Please fill this field";
+    if (!form.phone.trim()) newErrors.phone = "Please fill this field";
+    if (!form.addressLine.trim()) newErrors.addressLine = "Please fill this field";
+    if (!form.city.trim()) newErrors.city = "Please fill this field";
+    if (!form.state.trim()) newErrors.state = "Please fill this field";
+    if (!form.pincode.trim()) newErrors.pincode = "Please fill this field";
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
   };
 
   const addAddress = async () => {
+    if (!validateAddress()) return;
+
     try {
       await API.post("/address", form);
+
       setForm({
         name: "",
         phone: "",
@@ -67,20 +94,23 @@ function Checkout() {
         state: "",
         pincode: ""
       });
+
+      setErrors({});
       fetchAddresses();
-      alert("Address added");
     } catch (err) {
-      alert(err.response?.data?.message || "Failed to add address");
+      setCheckoutError(err.response?.data?.message || "Failed to add address");
     }
   };
 
   const prepareCheckout = async () => {
     if (!selectedAddressId) {
-      alert("Please select an address");
+      setCheckoutError("Please select an address");
       return;
     }
 
     try {
+      setCheckoutError("");
+
       const res = await API.post("/orders/checkout", {
         addressId: selectedAddressId,
         couponCode
@@ -88,20 +118,20 @@ function Checkout() {
 
       setSummary(res.data);
     } catch (err) {
-      alert(err.response?.data?.message || "Checkout failed");
+      setCheckoutError(err.response?.data?.message || "Checkout failed");
     }
   };
 
   const payNow = async () => {
     if (!summary) {
-      alert("Please prepare checkout first");
+      setCheckoutError("Please prepare checkout first");
       return;
     }
 
     const razorpayKey = process.env.REACT_APP_RAZORPAY_KEY_ID;
 
     if (!razorpayKey) {
-      alert("Missing Razorpay key in frontend env");
+      setCheckoutError("Missing Razorpay key in frontend env");
       return;
     }
 
@@ -116,7 +146,7 @@ function Checkout() {
       order_id: summary.razorpayOrderId,
       handler: async function (response) {
         try {
-          const verifyRes = await API.post("/orders/verify", {
+          await API.post("/orders/verify", {
             razorpay_order_id: response.razorpay_order_id,
             razorpay_payment_id: response.razorpay_payment_id,
             razorpay_signature: response.razorpay_signature,
@@ -124,11 +154,9 @@ function Checkout() {
             couponCode: summary.couponCode || ""
           });
 
-          alert("Payment success");
-          console.log(verifyRes.data);
           window.location.href = "/";
         } catch (err) {
-          alert(err.response?.data?.message || "Verification failed");
+          setCheckoutError(err.response?.data?.message || "Verification failed");
         }
       },
       prefill: {
@@ -143,7 +171,7 @@ function Checkout() {
     const rzp = new window.Razorpay(options);
 
     rzp.on("payment.failed", function () {
-      alert("Payment failed");
+      setCheckoutError("Payment failed");
     });
 
     rzp.open();
@@ -157,47 +185,45 @@ function Checkout() {
           <h2>Select Address</h2>
 
           {addresses.length === 0 ? (
-  <p className="empty-address-text">No saved addresses yet.</p>
-) : (
-  <div className="address-list">
-    {addresses.map((addr) => (
-      <label
-        key={addr._id}
-        className={`address-option ${
-          selectedAddressId === addr._id ? "selected-address" : ""
-        }`}
-      >
-        <div className="address-radio-wrap">
-          <input
-            type="radio"
-            name="selectedAddress"
-            checked={selectedAddressId === addr._id}
-            onChange={() => setSelectedAddressId(addr._id)}
-          />
-        </div>
+            <p className="empty-address-text">No saved addresses yet.</p>
+          ) : (
+            <div className="address-list">
+              {addresses.map((addr) => (
+                <label
+                  key={addr._id}
+                  className={`address-option ${
+                    selectedAddressId === addr._id ? "selected-address" : ""
+                  }`}
+                >
+                  <div className="address-radio-wrap">
+                    <input
+                      type="radio"
+                      name="selectedAddress"
+                      checked={selectedAddressId === addr._id}
+                      onChange={() => setSelectedAddressId(addr._id)}
+                    />
+                  </div>
 
-        <div className="address-content">
-          <div className="address-top-row">
-            <h4>{addr.name}</h4>
-            <span className="address-phone">{addr.phone}</span>
-          </div>
+                  <div className="address-content">
+                    <div className="address-top-row">
+                      <h4>{addr.name}</h4>
+                      <span className="address-phone">{addr.phone}</span>
+                    </div>
 
-          <p className="address-line">
-            {addr.addressLine}
-          </p>
+                    <p className="address-line">{addr.addressLine}</p>
 
-          <p className="address-line">
-            {addr.city}, {addr.state} - {addr.pincode}
-          </p>
+                    <p className="address-line">
+                      {addr.city}, {addr.state} - {addr.pincode}
+                    </p>
 
-          {addr.isDefault && (
-            <span className="default-address-badge">Default</span>
+                    {addr.isDefault && (
+                      <span className="default-address-badge">Default</span>
+                    )}
+                  </div>
+                </label>
+              ))}
+            </div>
           )}
-        </div>
-      </label>
-    ))}
-  </div>
-)}
         </div>
 
         <div className="checkout-card">
@@ -209,36 +235,51 @@ function Checkout() {
             value={form.name}
             onChange={handleChange}
           />
+          {errors.name && <span className="error-text">{errors.name}</span>}
+
           <input
             name="phone"
             placeholder="Phone Number"
             value={form.phone}
             onChange={handleChange}
           />
+          {errors.phone && <span className="error-text">{errors.phone}</span>}
+
           <input
             name="addressLine"
             placeholder="Address Line"
             value={form.addressLine}
             onChange={handleChange}
           />
+          {errors.addressLine && (
+            <span className="error-text">{errors.addressLine}</span>
+          )}
+
           <input
             name="city"
             placeholder="City"
             value={form.city}
             onChange={handleChange}
           />
+          {errors.city && <span className="error-text">{errors.city}</span>}
+
           <input
             name="state"
             placeholder="State"
             value={form.state}
             onChange={handleChange}
           />
+          {errors.state && <span className="error-text">{errors.state}</span>}
+
           <input
             name="pincode"
             placeholder="Pincode"
             value={form.pincode}
             onChange={handleChange}
           />
+          {errors.pincode && (
+            <span className="error-text">{errors.pincode}</span>
+          )}
 
           <button className="black-btn" onClick={addAddress}>
             Save Address
@@ -263,6 +304,8 @@ function Checkout() {
 
         <div className="checkout-card">
           <h2>Order Summary</h2>
+
+          {checkoutError && <p className="error-text">{checkoutError}</p>}
 
           {!summary ? (
             <p>Prepare checkout to see totals.</p>

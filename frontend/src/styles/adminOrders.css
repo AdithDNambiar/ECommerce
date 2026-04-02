@@ -1,7 +1,6 @@
 .admin-orders-page {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 28px 24px;
+  width: 100%;
+  padding: 28px 32px;
 }
 
 .admin-orders-page h2 {

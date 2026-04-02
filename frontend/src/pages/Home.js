@@ -260,7 +260,7 @@ function Home() {
             const discountedPrice =
               p.price - (p.price * p.discount) / 100;
 
-            const currentQty = cartQuantities[p._id] || 0;
+            const currentQty = cartQuantities[p._id]+1 || 1;
 
             return (
               <div

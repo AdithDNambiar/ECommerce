@@ -1,8 +1,6 @@
 .home-page {
   width: 100%;
-  max-width: 1450px;
-  margin: 0 auto;
-  padding: 20px 28px 32px;
+  padding: 20px 40px;
 }
 
 .home-banner-slider {
@@ -24,17 +22,19 @@
 
 .home-hero {
   border-radius: 28px;
-  padding: 42px 36px;
+  padding: 60px 50px;
   background:
     linear-gradient(120deg, rgba(17,24,39,0.96), rgba(31,41,55,0.88)),
     #111827;
   color: white;
   box-shadow: 0 18px 40px rgba(17, 24, 39, 0.16);
+  min-height: 420px;
+  flex-direction: column;
 }
 
 .home-hero h1 {
   margin: 0 0 12px;
-  font-size: 54px;
+  font-size: 64px;
   font-weight: 800;
   line-height: 1.08;
   max-width: 900px;
@@ -46,6 +46,7 @@
   max-width: 800px;
   font-size: 18px;
   line-height: 1.6;
+  align-items: center;
 }
 
 .search-toolbar {
@@ -72,8 +73,8 @@
 
 .products-container {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 22px;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 24px;
 }
 
 .product-card {

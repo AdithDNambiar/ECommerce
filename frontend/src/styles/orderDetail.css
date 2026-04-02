@@ -1,7 +1,6 @@
 .order-detail-page {
-  max-width: 1000px;
-  margin: 0 auto;
-  padding: 28px 24px;
+  width: 100%;
+  padding: 28px 32px;
 }
 
 .order-detail-box {
