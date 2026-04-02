@@ -47,10 +47,6 @@ function Cart() {
     }
   };
 
-  const checkout = () => {
-    navigate("/checkout");
-  };
-
   if (!cart) return <div className="cart-loading">Loading...</div>;
 
   return (
@@ -58,14 +54,14 @@ function Cart() {
       <div className="cart-header">
         <div>
           <h1>Your Cart</h1>
-          <p>Review your items before checkout</p>
+          <p>Review items, update quantity, and continue to checkout.</p>
         </div>
       </div>
 
       {cart.items.length === 0 ? (
         <div className="cart-empty">
           <h2>Your cart is empty</h2>
-          <p>Add some products and come back here.</p>
+          <p>Add something amazing and come back here.</p>
           <button className="cart-shop-btn" onClick={() => navigate("/")}>
             Continue Shopping
           </button>
@@ -91,6 +87,11 @@ function Cart() {
                     <p className="cart-unit-price">
                       Unit Price: ₹{item.unitPrice}
                     </p>
+
+                    <div className="cart-mini-tags">
+                      <span className="cart-mini-tag">Premium</span>
+                      <span className="cart-mini-tag">Fast Delivery</span>
+                    </div>
 
                     <div className="cart-qty-row">
                       <span className="qty-label">Quantity</span>
@@ -144,11 +145,16 @@ function Cart() {
               </div>
 
               <div className="summary-row">
+                <span>Delivery</span>
+                <span>Free</span>
+              </div>
+
+              <div className="summary-row">
                 <span>Grand Total</span>
                 <span className="summary-total">₹{cart.total}</span>
               </div>
 
-              <button className="checkout-btn" onClick={checkout}>
+              <button className="checkout-btn" onClick={() => navigate("/checkout")}>
                 Proceed to Checkout
               </button>
 

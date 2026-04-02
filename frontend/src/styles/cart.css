@@ -1,5 +1,5 @@
 .cart-page {
-  max-width: 1300px;
+  max-width: 1350px;
   margin: 0 auto;
   padding: 28px 24px 40px;
 }
@@ -10,7 +10,7 @@
 
 .cart-header h1 {
   margin: 0;
-  font-size: 34px;
+  font-size: 38px;
   font-weight: 800;
   color: #111827;
 }
@@ -71,7 +71,7 @@
 .cart-item-card {
   background: white;
   border: 1px solid #e5e7eb;
-  border-radius: 22px;
+  border-radius: 24px;
   padding: 20px;
   display: flex;
   justify-content: space-between;
@@ -88,10 +88,10 @@
 }
 
 .cart-item-image {
-  width: 130px;
-  height: 130px;
+  width: 150px;
+  height: 150px;
   object-fit: cover;
-  border-radius: 16px;
+  border-radius: 18px;
   background: #f3f4f6;
   border: 1px solid #eee;
   flex-shrink: 0;
@@ -104,16 +104,31 @@
 
 .cart-item-info h3 {
   margin: 0 0 8px;
-  font-size: 20px;
+  font-size: 22px;
   font-weight: 700;
   color: #111827;
-  word-break: break-word;
 }
 
 .cart-unit-price {
-  margin: 0 0 14px;
+  margin: 0 0 12px;
   color: #6b7280;
   font-size: 14px;
+}
+
+.cart-mini-tags {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+}
+
+.cart-mini-tag {
+  background: #eef2ff;
+  color: #3730a3;
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
 }
 
 .cart-qty-row {
@@ -134,6 +149,9 @@
   display: flex;
   align-items: center;
   gap: 10px;
+  background: #f3f4f6;
+  border-radius: 12px;
+  padding: 8px 10px;
 }
 
 .qty-controls button {
@@ -170,12 +188,8 @@
   cursor: pointer;
 }
 
-.remove-btn:hover {
-  background: #fecaca;
-}
-
 .cart-item-right {
-  min-width: 140px;
+  min-width: 150px;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -189,7 +203,7 @@
 }
 
 .cart-subtotal-value {
-  font-size: 24px;
+  font-size: 26px;
   font-weight: 800;
   color: #111827;
 }
@@ -202,14 +216,14 @@
 .cart-summary-card {
   background: white;
   border: 1px solid #e5e7eb;
-  border-radius: 22px;
-  padding: 22px;
+  border-radius: 24px;
+  padding: 24px;
   box-shadow: 0 14px 28px rgba(15, 23, 42, 0.05);
 }
 
 .cart-summary-card h2 {
   margin: 0 0 18px;
-  font-size: 26px;
+  font-size: 28px;
   font-weight: 800;
 }
 
@@ -223,7 +237,7 @@
 }
 
 .summary-total {
-  font-size: 24px;
+  font-size: 26px;
   font-weight: 800;
   color: #111827;
 }
@@ -254,10 +268,6 @@
   cursor: pointer;
 }
 
-.continue-btn:hover {
-  background: #f9fafb;
-}
-
 @media (max-width: 900px) {
   .cart-layout {
     grid-template-columns: 1fr;
@@ -273,13 +283,8 @@
     padding: 16px;
   }
 
-  .cart-header h1 {
-    font-size: 28px;
-  }
-
   .cart-item-card {
     flex-direction: column;
-    align-items: stretch;
   }
 
   .cart-item-left {

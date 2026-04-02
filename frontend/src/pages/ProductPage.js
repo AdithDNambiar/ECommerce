@@ -1,10 +1,11 @@
 import React, { useContext, useEffect, useState, useCallback } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { FaHeart } from "react-icons/fa";
+import { FaHeart, FaBolt, FaTruck, FaShieldAlt } from "react-icons/fa";
 import API from "../api/axios";
 import { AuthContext } from "../context/AuthContext";
 import { LoginModalContext } from "../context/LoginModalContext";
 import { WishlistContext } from "../context/WishlistContext";
+import { CartContext } from "../context/CartContext";
 import "../styles/product.css";
 import Toast from "../components/Toast";
 
@@ -14,6 +15,7 @@ function ProductPage() {
   const { user } = useContext(AuthContext);
   const { openLoginModal } = useContext(LoginModalContext);
   const { toggleWishlist, isWishlisted } = useContext(WishlistContext);
+  const { fetchCartCount } = useContext(CartContext);
 
   const [product, setProduct] = useState(null);
   const [reviews, setReviews] = useState([]);
@@ -25,6 +27,7 @@ function ProductPage() {
   const [showToast, setShowToast] = useState(false);
   const [pageError, setPageError] = useState("");
   const [activeImage, setActiveImage] = useState("");
+  const [cartQty, setCartQty] = useState(0);
 
   const fetchProduct = useCallback(async () => {
     try {
@@ -52,10 +55,32 @@ function ProductPage() {
     }
   }, [id]);
 
+  const fetchCartQty = useCallback(async () => {
+    if (!user) {
+      setCartQty(0);
+      return;
+    }
+
+    try {
+      const res = await API.get("/cart");
+      const found = (res.data.items || []).find(
+        (item) => item.product._id === id
+      );
+      setCartQty(found ? found.quantity : 0);
+    } catch (err) {
+      setCartQty(0);
+      console.log(err);
+    }
+  }, [id, user]);
+
   useEffect(() => {
     fetchProduct();
     fetchReviews();
   }, [fetchProduct, fetchReviews]);
+
+  useEffect(() => {
+    fetchCartQty();
+  }, [fetchCartQty]);
 
   const showSuccessToast = (message) => {
     setToastMessage(message);
@@ -67,7 +92,7 @@ function ProductPage() {
     }, 2000);
   };
 
-  const addToCart = async () => {
+  const increaseCartQty = async () => {
     if (!user) {
       openLoginModal();
       return;
@@ -79,7 +104,36 @@ function ProductPage() {
         quantity: 1
       });
 
-      showSuccessToast("Added to cart");
+      await fetchCartQty();
+      await fetchCartCount();
+      showSuccessToast("Cart updated");
+    } catch (err) {
+      const msg = err.response?.data?.message || "Something went wrong";
+      showSuccessToast(msg);
+    }
+  };
+
+  const decreaseCartQty = async () => {
+    if (!user) {
+      openLoginModal();
+      return;
+    }
+
+    try {
+      if (cartQty <= 1) {
+        await API.delete("/cart/remove", {
+          data: { productId: product._id }
+        });
+      } else {
+        await API.put("/cart/update", {
+          productId: product._id,
+          quantity: cartQty - 1
+        });
+      }
+
+      await fetchCartQty();
+      await fetchCartCount();
+      showSuccessToast("Cart updated");
     } catch (err) {
       const msg = err.response?.data?.message || "Something went wrong";
       showSuccessToast(msg);
@@ -170,6 +224,10 @@ function ProductPage() {
         </div>
 
         <div className="product-details">
+          <span className="product-detail-badge">
+            {product.category || "Featured"}
+          </span>
+
           <h2>{product.name}</h2>
           <p>{product.description}</p>
 
@@ -177,6 +235,9 @@ function ProductPage() {
             <span className="price">₹{discountedPrice}</span>
             {product.discount > 0 && (
               <span className="old-price">₹{product.price}</span>
+            )}
+            {product.discount > 0 && (
+              <span className="discount-chip">{product.discount}% OFF</span>
             )}
           </div>
 
@@ -188,13 +249,34 @@ function ProductPage() {
             Rating: {product.rating || 0} ({product.numReviews || 0} reviews)
           </div>
 
+          <div className="product-detail-qty">
+            <button onClick={decreaseCartQty}>-</button>
+            <span>{cartQty}</span>
+            <button onClick={increaseCartQty} disabled={product.stock === 0}>+</button>
+          </div>
+
           <button
             className="buy-btn"
             disabled={product.stock === 0}
-            onClick={addToCart}
+            onClick={increaseCartQty}
           >
             {product.stock === 0 ? "Out of Stock" : "Add to Cart"}
           </button>
+
+          <div className="product-feature-boxes">
+            <div className="product-feature-item">
+              <FaBolt />
+              <span>Fast checkout</span>
+            </div>
+            <div className="product-feature-item">
+              <FaTruck />
+              <span>Quick delivery</span>
+            </div>
+            <div className="product-feature-item">
+              <FaShieldAlt />
+              <span>Secure shopping</span>
+            </div>
+          </div>
         </div>
       </div>
 
