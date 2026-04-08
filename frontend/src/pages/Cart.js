@@ -49,6 +49,10 @@ function Cart() {
 
   if (!cart) return <div className="cart-loading">Loading...</div>;
 
+  const uniqueCount = new Set(
+    (cart.items || []).map((item) => item.product._id)
+  ).size;
+
   return (
     <div className="cart-page">
       <div className="cart-header">
@@ -141,7 +145,7 @@ function Cart() {
 
               <div className="summary-row">
                 <span>Items</span>
-                <span>{cart.items.length}</span>
+                <span>{uniqueCount}</span>
               </div>
 
               <div className="summary-row">

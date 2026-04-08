@@ -245,9 +245,7 @@ function ProductPage() {
             {product.stock > 0 ? "In Stock" : "Out of Stock"}
           </div>
 
-          <div className="rating-text">
-            Rating: {product.rating || 0} ({product.numReviews || 0} reviews)
-          </div>
+          
 
           <div className="product-detail-qty">
             <button onClick={decreaseCartQty}>-</button>

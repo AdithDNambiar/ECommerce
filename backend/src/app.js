@@ -4,6 +4,8 @@ const cookieParser = require("cookie-parser");
 
 const app = express();
 
+const notificationRoutes = require("./routes/notificationRoutes");
+
 app.use(cors({
   origin:true,
   credentials: true
@@ -12,7 +14,7 @@ app.use(cors({
 app.use(express.json());
 app.use(cookieParser());
 app.use("/api/address", require("./routes/addressRoutes"));
-
+app.use("/api/notifications", notificationRoutes);
 app.use("/api/auth", require("./routes/authRoutes"));
 app.use("/api/products", require("./routes/productRoutes"));
 app.use("/api/cart", require("./routes/cartRoutes"));

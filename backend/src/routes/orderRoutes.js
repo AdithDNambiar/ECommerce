@@ -1,20 +1,16 @@
 const express = require("express");
 const router = express.Router();
-const order = require("../controllers/orderController");
+const orderController = require("../controllers/orderController");
 const { protect, adminOnly } = require("../middleware/authMiddleware");
-router.post("/checkout", protect, order.checkout);
-router.post("/create", protect, order.createOrder);
-router.post("/verify", protect, order.verifyPayment);
-router.get("/my", protect, order.getMyOrders);
 
-router.put("/cancel/:id", protect, order.cancelOrder);
+router.post("/checkout", protect, orderController.checkout);
+router.post("/verify", protect, orderController.verifyPayment);
 
-router.put("/admin/status/:id", protect, adminOnly, order.updateOrderStatus);
+router.get("/my", protect, orderController.getMyOrders);
+router.get("/:id", protect, orderController.getOrderById);
+router.put("/cancel/:id", protect, orderController.cancelOrder);
 
-router.get("/:id", protect, order.getOrderById);
-router.post("/webhook/razorpay", order.razorpayWebhook);
-
-// admin
-router.get("/admin/all", protect, adminOnly, order.getAllOrders);
+router.get("/admin/all", protect, adminOnly, orderController.getAllOrdersAdmin);
+router.put("/admin/status/:id", protect, adminOnly, orderController.updateOrderStatus);
 
 module.exports = router;

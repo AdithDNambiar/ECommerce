@@ -9,8 +9,12 @@ export const CartProvider = ({ children }) => {
   const fetchCartCount = async () => {
     try {
       const res = await API.get("/cart");
-      const count = res.data.items.reduce((sum, item) => sum + item.quantity, 0);
-      setCartCount(count);
+
+      const uniqueCount = new Set(
+        (res.data.items || []).map((item) => item.product._id)
+      ).size;
+
+      setCartCount(uniqueCount);
     } catch {
       setCartCount(0);
     }
